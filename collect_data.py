@@ -4,16 +4,12 @@ import requests
 from bs4 import BeautifulSoup
 from tweet import Tweet
 
-URL = u'https://twitter.com/UpdateCovid'
+URL = 'https://twitter.com/UpdateCovid'
 
 
-def get_tweets(idle: int = 1, scrolls: int = 5):
+def get_tweets():
     """
     This function extract tweets from the given url and return the html content as text
-    :param url: url path (should be twitter
-    :param query: string to search hash tags on twitter
-    :param idle: sleep time before collecting browser data
-    :param scrolls: number of scrolls we wish to simulate
     :return:
     """
     response = ""
@@ -22,7 +18,6 @@ def get_tweets(idle: int = 1, scrolls: int = 5):
     except requests.ConnectionError as e:
         print("Url failure, {}".format(e))
         exit(1)
-    scrolls = 5
 
     soup = BeautifulSoup(response.text, 'html.parser')
     tweets = soup.findAll('li', {"class": 'js-stream-item'})
@@ -36,7 +31,7 @@ def get_hashtag(tweet_text):
     :param tweet_text: tweet text
     :return: list of hashtags
     """
-    hashtags=[]
+    hashtags = []
     tweet_text_str = str(tweet_text)
     pattern = re.compile(r'\#([a-zA-Z\.\_\-0-9]+)')
     matches = pattern.finditer(tweet_text_str)
@@ -90,7 +85,7 @@ def save_to_csv(filepath, tweets_dict):
 
 
 def main():
-    soup_tweets = get_tweets(1,1)
+    soup_tweets = get_tweets()
     tweets_dict = create_tweets_obj(tweets=soup_tweets)
 
     for tweet in tweets_dict:
