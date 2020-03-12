@@ -1,5 +1,5 @@
 """
-Tweeter class, contains 6-8 fields
+Tweeter class, contains 4 fields
 """
 
 
@@ -8,12 +8,39 @@ class Tweet:
     initializing new tweet
     """
 
-    def __init__(self, name, nickname, time, content, num_retweets, num_love, video_len=None, video_views=None):
-        self.name = name
-        self.nickname = nickname
-        self.time = time
-        self.content = content
-        self.num_retweets = num_retweets
-        self.num_love = num_love
-        self.video_len = video_len
-        self.video_views = video_views
+    def __init__(self, user, text, replies, retweets):
+        self.user = user
+        self.text = text
+        self.replies = replies
+        self.retweets = retweets
+
+    def print_tweet(self):
+        string = """
+        Tweet Info:\n
+        user: {}\n
+        text: {}\n
+        replies: {}\n
+        Retweets: {}\n
+        """.format(self.user, self.text, self.replies, self.retweets)
+        return string
+
+    def __str__(self):
+        string = """
+        Tweet Info:\n
+        user: {}\n
+        text: {}\n
+        replies: {}\n
+        Retweets: {}\n
+        """.format(self.user, self.text, self.replies, self.retweets)
+        return string
+
+    def __repr__(self):
+        string = """
+        Tweet Info:
+        user: {}
+        text: {}
+        replies: {}
+        Retweets: {}
+        """.format(self.user, self.text, self.replies, self.retweets)
+        return string
+
