@@ -8,21 +8,21 @@ class Tweet:
     initializing new tweet
     """
 
-    def __init__(self, user, text, replies, retweets, hashtags):
+    def __init__(self, user, replies, retweets, hashtags, likes):
         self.user = user
-        self.text = text
         self.replies = replies
         self.retweets = retweets
         self.hashtags = hashtags
+        self.likes = likes
 
     def __str__(self):
         string = """Tweet Info:
         user: {}
-        text: {}
         replies: {}
         Retweets: {}
         hashtags: {}
-        """.format(self.user, self.text, self.replies, self.retweets, self.hashtags)
+        likes: {}
+        """.format(self.user, self.replies, self.retweets, self.hashtags, self.likes)
         return string
 
 

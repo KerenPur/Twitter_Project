@@ -1,44 +1,38 @@
 import csv
 import re
-import requests
+import time
+
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+
 from tweet import Tweet
 
-URL = 'https://twitter.com/UpdateCovid'
+URL ='http://twitter.com/search?q='
 
 
-def get_tweets():
+def get_tweets(query: str, idle: int = 3, scrolls: int = 5):
     """
     This function extract tweets from the given url and return the html content as text
+    :param url: url path (should be twitter
+    :param query: string to search hash tags on twitter
+    :param idle: sleep time before collecting browser data
+    :param scrolls: number of scrolls we wish to simulate
     :return:
     """
-    response = ""
-    try:
-        response = requests.get(URL)
-    except requests.ConnectionError as e:
-        print("Url failure, {}".format(e))
-        exit(1)
+    browser = webdriver.Chrome()
+    browser.get(URL + query)
+    time.sleep(idle)
+    body = browser.find_element_by_tag_name('body')
+    for _ in range(scrolls):
+        body.send_keys(Keys.PAGE_DOWN)
+        time.sleep(0.2)
 
-    soup = BeautifulSoup(response.text, 'html.parser')
-    tweets = soup.findAll('li', {"class": 'js-stream-item'})
+    time.sleep(2)
+    soup = BeautifulSoup(browser.page_source, 'lxml')
+    tweets = soup.find_all("div", attrs={"data-testid": "tweet"})
 
     return tweets
-
-
-def get_hashtag(tweet_text):
-    """
-    This function gets all the hashtags for a text in tweet
-    :param tweet_text: tweet text
-    :return: list of hashtags
-    """
-    hashtags = []
-    tweet_text_str = str(tweet_text)
-    pattern = re.compile(r'\#([a-zA-Z\.\_\-0-9]+)')
-    matches = pattern.finditer(tweet_text_str)
-    for match in matches:
-        print(match.group(1))
-        hashtags.append(match.group(1))
-    return hashtags
 
 
 def create_tweets_obj(tweets):
@@ -48,18 +42,36 @@ def create_tweets_obj(tweets):
     :return: tweets dictionary
     """
     tweets_dict = {}
-    for tweet in tweets:
-        if tweet.find('p', {"class": 'tweet-text'}):
-            tweet_user = tweet.find('span', {"class": 'username'}).text.strip()
-            tweet_text = tweet.find('p', {"class": 'tweet-text'}).text.encode('utf8').strip()
-            replies = tweet.find('span', {"class": "ProfileTweet-actionCount"}).text.strip()
-            retweets = tweet.find('span', {"class": "ProfileTweet-action--retweet"}).text.strip()
+    replies_regex = re.compile("([0-9]+) [(replies)(reply)]")
+    retweets_regex = re.compile(".* ([0-9]+) [(Retweets)(Retweet)]")
+    likes_regex = re.compile(".* ([0-9]+) [(likes)(like)]")
+    hashtag_regex = re.compile("/hashtag/([^\s]+)\?src=hashtag_click")
+    username_regex = re.compile("/([^\s/]+)/?")
+    print("Found {} tweets".format(len(tweets)))
+    for idx, tweet in enumerate(tweets):
+        labels = [item for item in tweet.find_all("div", {"role": "group"}) if "aria-label" in item.attrs]
+        replies = 0
+        retweets = 0
+        likes = 0
+        if len(labels) == 1:
+            label = labels[0]["aria-label"]
+            if replies_regex.match(label):
+                replies = int(replies_regex.match(label).group(1))
 
-            tweet_obj = Tweet(user=tweet_user, text=tweet_text, replies=replies, retweets=retweets,
-                              hashtags=get_hashtag(tweet_text))
-            tweets_dict[tweet_user] = tweet_obj
-        else:
-            continue
+            if retweets_regex.match(label):
+                retweets = int(retweets_regex.match(label).group(1))
+
+            if likes_regex.match(label):
+                likes = int(likes_regex.match(label).group(1))
+
+        hashtags = [hashtag_regex.match(item["href"]).group(1)
+                    for item in tweet.find_all("a") if "href" in item.attrs and hashtag_regex.match(item["href"])]
+        tweet_user = [item['href']
+                      for item in tweet.find_all("a", {"aria-haspopup": 'false', "role": "link"})
+                      if "href" in item.attrs][0]
+        tweet_user = username_regex.match(tweet_user).group(1)
+        tweet_obj = Tweet(user=tweet_user, replies=replies, retweets=retweets, hashtags=hashtags, likes=likes)
+        tweets_dict[tweet_user] = tweet_obj
 
     return tweets_dict
 
@@ -85,7 +97,7 @@ def save_to_csv(filepath, tweets_dict):
 
 
 def main():
-    soup_tweets = get_tweets()
+    soup_tweets = get_tweets("corona")
     tweets_dict = create_tweets_obj(tweets=soup_tweets)
 
     for tweet in tweets_dict:
