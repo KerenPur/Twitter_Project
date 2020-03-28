@@ -85,11 +85,11 @@ def save_to_csv(filepath, tweets_dict):
     try:
         with open(filepath, 'w', newline='') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-            header = ['User', 'Content', 'Replies', 'Retweets', 'Hashtags' '\n']
+            header = ['User', 'Replies', 'Retweets', 'Hashtags' '\n']
             wr.writerow(header)
             for key in tweets_dict:
                 wr.writerow(
-                    [tweets_dict[key].user, tweets_dict[key].text, tweets_dict[key].replies, tweets_dict[key].retweets,
+                    [tweets_dict[key].user, tweets_dict[key].replies, tweets_dict[key].retweets,
                      tweets_dict[key].hashtags, '\n'])
     except FileExistsError:
         print('File Already exists')
@@ -97,7 +97,7 @@ def save_to_csv(filepath, tweets_dict):
 
 
 def main():
-    soup_tweets = get_tweets("corona")
+    soup_tweets = get_tweets("COVID")
     tweets_dict = create_tweets_obj(tweets=soup_tweets)
 
     for tweet in tweets_dict:
