@@ -5,6 +5,7 @@ import csv
 import re
 import time
 import json
+import argparse
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -21,7 +22,7 @@ def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5
     :param user: user name for log in
     :param query: string to search hash tags on twitter
     :param scrolls: number of scrolls we wish to simulate
-    :return:
+    :return: tweets
     """
     browser = webdriver.Chrome()
 
@@ -57,10 +58,10 @@ def create_tweets_obj(tweets):
     :return: tweets dictionary
     """
     tweets_dict = {}
-    replies_regex = re.compile("([0-9]+) [(replies)(reply)]")
-    retweets_regex = re.compile(".* ([0-9]+) [(Retweets)(Retweet)]")
-    likes_regex = re.compile(".* ([0-9]+) [(likes)(like)]")
-    hashtag_regex = re.compile("/hashtag/([^\s]+)\?src=hashtag_click")
+    replies_regex = re.compile('([0-9]+) [(replies)(reply)]')
+    retweets_regex = re.compile('.* ([0-9]+) [(Retweets)(Retweet)]')
+    likes_regex = re.compile('.* ([0-9]+) [(likes)(like)]')
+    hashtag_regex = re.compile('/hashtag/([^\s]+)\?src=hashtag_click')
     username_regex = re.compile("/([^\s/]+)/?")
     print("Found {} tweets".format(len(tweets)))
     for idx, tweet in enumerate(tweets):
@@ -96,7 +97,6 @@ def save_to_csv(file_path, tweets_dict):
     This function saves the tweets dict to csv file
     :param file_path: csv file path
     :param tweets_dict: tweets dictionary
-    :return: None
     """
     try:
         with open(file_path, 'w', newline='') as myfile:
@@ -112,8 +112,24 @@ def save_to_csv(file_path, tweets_dict):
         exit(1)
 
 
+def get_args():
+    """
+    This function extracts the user input from cli
+    :return: query, user, password
+    """
+    parser = argparse.ArgumentParser(description='Query User(optional) Password(optional)')
+    parser.add_argument('query', type=str, help='Search query on tweeter')
+    parser.add_argument('-u', '--username', default=False, help='Tweeter Username')
+    parser.add_argument('-p', '--password', default=False, help='Tweeter Password')
+
+    args = parser.parse_args()
+
+    return args.query, args.username, args.password
+
+
 def main():
-    soup_tweets = get_tweets("COVID")
+    query, user, password = get_args()
+    soup_tweets = get_tweets(query=query, user=user, password=password)
 
     tweets_dict = create_tweets_obj(tweets=soup_tweets)
 
