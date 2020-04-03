@@ -1,6 +1,10 @@
+"""
+This file is responsible for collecting the tweets from twitter for a certain hashtag
+"""
 import csv
 import re
 import time
+import json
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -8,21 +12,32 @@ from selenium.webdriver.common.keys import Keys
 
 from tweet import Tweet
 
-URL ='http://twitter.com/search?q='
 
-
-def get_tweets(query: str, idle: int = 3, scrolls: int = 5):
+def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5, scrolls: int = 5):
     """
     This function extract tweets from the given url and return the html content as text
-    :param url: url path (should be twitter
+    :param idle: idle time for requests
+    :param password: password for log in
+    :param user: user name for log in
     :param query: string to search hash tags on twitter
-    :param idle: sleep time before collecting browser data
     :param scrolls: number of scrolls we wish to simulate
     :return:
     """
     browser = webdriver.Chrome()
-    browser.get(URL + query)
-    time.sleep(idle)
+
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+
+    if user is not None and password is not None:
+        browser.implicitly_wait(idle)
+        browser.get(config['MAIN_URL'])
+        time.sleep(1)
+        browser.find_element_by_name("session[username_or_email]").send_keys(user)
+        browser.implicitly_wait(1)
+        browser.find_element_by_name("session[password]").send_keys(password)
+        browser.implicitly_wait(1)
+    browser.get(config['QUERY_URL'] + query)
+
     body = browser.find_element_by_tag_name('body')
     for _ in range(scrolls):
         body.send_keys(Keys.PAGE_DOWN)
@@ -76,14 +91,15 @@ def create_tweets_obj(tweets):
     return tweets_dict
 
 
-def save_to_csv(filepath, tweets_dict):
+def save_to_csv(file_path, tweets_dict):
     """
     This function saves the tweets dict to csv file
+    :param file_path: csv file path
     :param tweets_dict: tweets dictionary
     :return: None
     """
     try:
-        with open(filepath, 'w', newline='') as myfile:
+        with open(file_path, 'w', newline='') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
             header = ['User', 'Replies', 'Retweets', 'Hashtags' '\n']
             wr.writerow(header)
@@ -98,6 +114,7 @@ def save_to_csv(filepath, tweets_dict):
 
 def main():
     soup_tweets = get_tweets("COVID")
+
     tweets_dict = create_tweets_obj(tweets=soup_tweets)
 
     for tweet in tweets_dict:
