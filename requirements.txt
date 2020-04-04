@@ -1,3 +1,4 @@
+mysql
 selenium
 beautifulsoup4
 requests

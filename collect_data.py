@@ -6,11 +6,13 @@ import re
 import time
 import json
 import argparse
-
+from store_db import *
+import create_db
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
+from store_db import drop_database, test_db
 from tweet import Tweet
 
 
@@ -128,15 +130,17 @@ def get_args():
 
 
 def main():
+    #drop_database()
     query, user, password = get_args()
+    create_db.main()
     soup_tweets = get_tweets(query=query, user=user, password=password)
-
     tweets_dict = create_tweets_obj(tweets=soup_tweets)
-
+    test_db()
+    store_tweets_dict(tweets_dict,query,user)
     for tweet in tweets_dict:
         print(tweets_dict[tweet])
 
-    save_to_csv('tweet.csv', tweets_dict)
+    # save_to_csv('tweet.csv', tweets_dict)
 
 
 if __name__ == "__main__":
