@@ -63,6 +63,7 @@ def create_tweets_obj(tweets):
     likes_regex = re.compile('.* ([0-9]+) [(likes)(like)]')
     hashtag_regex = re.compile('/hashtag/([^\s]+)\?src=hashtag_click')
     username_regex = re.compile("/([^\s/]+)/?")
+    text_regex = re.compile("(.*?)</span>")
     print("Found {} tweets".format(len(tweets)))
     for idx, tweet in enumerate(tweets):
         labels = [item for item in tweet.find_all("div", {"role": "group"}) if "aria-label" in item.attrs]
@@ -86,7 +87,10 @@ def create_tweets_obj(tweets):
                       for item in tweet.find_all("a", {"aria-haspopup": 'false', "role": "link"})
                       if "href" in item.attrs][0]
         tweet_user = username_regex.match(tweet_user).group(1)
-        tweet_obj = Tweet(user=tweet_user, replies=replies, retweets=retweets, hashtags=hashtags, likes=likes)
+        tweet_text = tweet.findAll("div", {"lang": "en", "dir": "auto"})[0].text
+
+        tweet_obj = Tweet(user=tweet_user, replies=replies, retweets=retweets, hashtags=hashtags, likes=likes,
+                          text=tweet_text)
         tweets_dict[tweet_user] = tweet_obj
 
     return tweets_dict
@@ -101,12 +105,12 @@ def save_to_csv(file_path, tweets_dict):
     try:
         with open(file_path, 'w', newline='') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-            header = ['User', 'Replies', 'Retweets', 'Hashtags' '\n']
+            header = ['User', 'Replies', 'Retweets', 'Hashtags', 'text' '\n']
             wr.writerow(header)
             for key in tweets_dict:
                 wr.writerow(
                     [tweets_dict[key].user, tweets_dict[key].replies, tweets_dict[key].retweets,
-                     tweets_dict[key].hashtags, '\n'])
+                     tweets_dict[key].hashtags, tweets_dict[key].text, '\n'])
     except FileExistsError:
         print('File Already exists')
         exit(1)
