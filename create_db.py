@@ -11,11 +11,12 @@ TABLES = {}
 
 TABLES['tweets'] = ('''
 CREATE TABLE tweets(
-    id INTEGER PRIMARY KEY AUTO_INCREMENT, 
+    id VARCHAR(255) PRIMARY KEY, 
     user_nickname VARCHAR(255) NOT NULL,
     num_replies INT,
     num_likes INT,
-    num_retweets INT
+    num_retweets INT,
+    text VARCHAR(1000)
 )''')
 
 TABLES['hashtags'] = ("""
@@ -28,7 +29,7 @@ TABLES['tweets_hashtags'] = ("""
 CREATE TABLE tweets_hashtags(
     id INTEGER PRIMARY KEY AUTO_INCREMENT, 
     hashtag_id INTEGER, 
-    tweet_id INTEGER,
+    tweet_id VARCHAR(255),
     FOREIGN KEY (hashtag_id) REFERENCES hashtags (id),
     FOREIGN KEY (tweet_id) REFERENCES tweets (id)
 )""")
@@ -57,7 +58,7 @@ CREATE TABLE username_searches(
 TABLES['tweets_username_searches'] = ("""
 CREATE TABLE tweets_username_searches(
   id INTEGER PRIMARY KEY AUTO_INCREMENT,
-  tweet_id INTEGER,
+  tweet_id VARCHAR(255),
   username_search_id INTEGER,
   FOREIGN KEY (username_search_id) REFERENCES username_searches (id),
   FOREIGN KEY (tweet_id) REFERENCES tweets (id)
@@ -66,11 +67,16 @@ CREATE TABLE tweets_username_searches(
 TABLES['searches_tweets'] = ("""
 CREATE TABLE searches_tweets(
   id INTEGER PRIMARY KEY AUTO_INCREMENT,
-  tweet_id INTEGER,
+  tweet_id VARCHAR(255),
   search_id INTEGER,
   FOREIGN KEY (search_id) REFERENCES searches (id),
   FOREIGN KEY (tweet_id) REFERENCES tweets (id)
 )""")
+
+QUERIES= {'add_tweet_index': '''CREATE UNIQUE INDEX idx_tweets_id ON tweets (id)''',
+                'add_username_index ': '''CREATE UNIQUE INDEX idx_username ON usernames (username)''',
+                'add_hashtags_index': '''CREATE UNIQUE INDEX idx_hashtags_id ON hashtags (hashtag)''',
+                'add_searches_index': '''CREATE UNIQUE INDEX idx_searches_id ON searches (search_string)'''}
 
 
 def create_connection(host_name, user_name, user_password):
@@ -100,13 +106,7 @@ def execute_query(cursor, query):
         print(f"The error '{e}' occurred")
 
 
-create_database_query = '''CREATE DATABASE ''' + DB_NAME
 
-add_tweet_index = '''CREATE UNIQUE INDEX idx_tweets_id ON tweets (id)'''
-
-add_hashtags_index = '''CREATE UNIQUE INDEX idx_hashtags_id ON hashtags (id)'''
-
-add_searches_index = '''CREATE UNIQUE INDEX idx_searches_id ON searches (id)'''
 
 
 def main():
@@ -139,6 +139,17 @@ def main():
                 print(err.msg)
         else:
             print("OK")
+    #adding indexes
+    for query_name in QUERIES:
+        query = QUERIES[query_name]
+        try:
+            print("Creating {}: ".format(query_name), end='')
+            cursor.execute(query)
+        except mysql.connector.Error as err:
+            print(err.msg)
+        else:
+            print("OK")
+
 
     cursor.close()
     cnx.close()

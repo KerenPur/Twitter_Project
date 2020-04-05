@@ -11,8 +11,7 @@ import create_db
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-
-from store_db import drop_database, test_db
+from store_db import test_db
 from tweet import Tweet
 
 
@@ -144,7 +143,6 @@ def main():
     for tweet in tweets_dict:
         print(tweets_dict[tweet])
 
-    # save_to_csv('tweet.csv', tweets_dict)
 
 
 if __name__ == "__main__":
