@@ -1,6 +1,7 @@
 """
 Tweeter class, contains 5 fields
 """
+import hashlib
 
 
 class Tweet:
@@ -27,8 +28,9 @@ class Tweet:
         """.format(self.user, self.replies, self.retweets, self.hashtags, self.likes, self.text)
         return string
 
-    def __hash__(self):
-        return hash((self.text, self.user, tuple(self.hashtags)))
+    @property
+    def hash(self):
+        return hashlib.sha1((self.text + self.user).encode()).hexdigest()
 
 
 

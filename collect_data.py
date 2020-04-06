@@ -11,8 +11,8 @@ import create_db
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from store_db import test_db
 from tweet import Tweet
+from data_mining.store_db import store_tweets_dict
 
 
 def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5, scrolls: int = 5):
@@ -26,11 +26,13 @@ def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5
     :return: tweets
     """
     browser = webdriver.Chrome()
+    try:
+        with open('config.json', 'r') as file:
+            config = json.load(file)
+    except FileNotFoundError as e:
+        print(f"config file is missing, error: {e}")
 
-    with open('config.json', 'r') as file:
-        config = json.load(file)
-
-    if user is not None and password is not None:
+    if user != 'anonymous' and password != 'anonymous':
         browser.implicitly_wait(idle)
         browser.get(config['MAIN_URL'])
         time.sleep(1)
@@ -64,7 +66,6 @@ def create_tweets_obj(tweets):
     likes_regex = re.compile('.* ([0-9]+) [(likes)(like)]')
     hashtag_regex = re.compile('/hashtag/([^\s]+)\?src=hashtag_click')
     username_regex = re.compile("/([^\s/]+)/?")
-    text_regex = re.compile("(.*?)</span>")
     print("Found {} tweets".format(len(tweets)))
     for idx, tweet in enumerate(tweets):
         labels = [item for item in tweet.find_all("div", {"role": "group"}) if "aria-label" in item.attrs]
@@ -122,10 +123,11 @@ def get_args():
     This function extracts the user input from cli
     :return: query, user, password
     """
-    parser = argparse.ArgumentParser(description='Query User(optional) Password(optional)')
+    parser = argparse.ArgumentParser(description='Query MySql_password User(optional) Password(optional)')
     parser.add_argument('query', type=str, help='Search query on tweeter')
-    parser.add_argument('-u', '--username', default=False, help='Tweeter Username')
-    parser.add_argument('-p', '--password', default=False, help='Tweeter Password')
+    parser.add_argument('sql_password', type=str, help='MySql Server password')
+    parser.add_argument('-u', '--username', default='anonymous', help='Tweeter Username')
+    parser.add_argument('-p', '--password', default='anonymous', help='Tweeter Password')
 
     args = parser.parse_args()
 
@@ -133,16 +135,13 @@ def get_args():
 
 
 def main():
-    #drop_database()
+    # drop_database()
     query, user, password = get_args()
     create_db.main()
     soup_tweets = get_tweets(query=query, user=user, password=password)
     tweets_dict = create_tweets_obj(tweets=soup_tweets)
     test_db()
-    store_tweets_dict(tweets_dict,query,user)
-    for tweet in tweets_dict:
-        print(tweets_dict[tweet])
-
+    store_tweets_dict(tweets_dict, query, user)
 
 
 if __name__ == "__main__":
