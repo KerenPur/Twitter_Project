@@ -123,7 +123,7 @@ def get_args():
     This function extracts the user input from cli
     :return: query, user, password
     """
-    parser = argparse.ArgumentParser(description='Query User(optional) Password(optional)')
+    parser = argparse.ArgumentParser(description='Query MySql_password User(optional) Password(optional)')
     parser.add_argument('query', type=str, help='Search query on tweeter')
     parser.add_argument('sql_password', type=str, help='MySql Server password')
     parser.add_argument('-u', '--username', default='anonymous', help='Tweeter Username')
