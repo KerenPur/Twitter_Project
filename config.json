@@ -1,4 +1,7 @@
 {
   "MAIN_URL": "https://twitter.com/login",
-  "QUERY_URL": "http://twitter.com/search?q="
+  "QUERY_URL": "http://twitter.com/search?q=",
+   "HOST" : "localhost",
+  "USER_NAME" : "root",
+  "DB_NAME" : "twitter_db"
 }

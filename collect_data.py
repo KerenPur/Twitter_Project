@@ -15,6 +15,7 @@ from store_db import test_db
 from tweet import Tweet
 
 
+
 def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5, scrolls: int = 5):
     """
     This function extract tweets from the given url and return the html content as text
@@ -26,7 +27,6 @@ def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5
     :return: tweets
     """
     browser = webdriver.Chrome()
-
     with open('config.json', 'r') as file:
         config = json.load(file)
 
@@ -65,7 +65,6 @@ def create_tweets_obj(tweets):
     hashtag_regex = re.compile('/hashtag/([^\s]+)\?src=hashtag_click')
     username_regex = re.compile("/([^\s/]+)/?")
     text_regex = re.compile("(.*?)</span>")
-    print("Found {} tweets".format(len(tweets)))
     for idx, tweet in enumerate(tweets):
         labels = [item for item in tweet.find_all("div", {"role": "group"}) if "aria-label" in item.attrs]
         replies = 0
@@ -133,15 +132,13 @@ def get_args():
 
 
 def main():
-    #drop_database()
+
     query, user, password = get_args()
     create_db.main()
     soup_tweets = get_tweets(query=query, user=user, password=password)
     tweets_dict = create_tweets_obj(tweets=soup_tweets)
-    test_db()
     store_tweets_dict(tweets_dict,query,user)
-    for tweet in tweets_dict:
-        print(tweets_dict[tweet])
+
 
 
 
