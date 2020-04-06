@@ -3,7 +3,7 @@ import mysql.connector
 
 HOST = 'localhost'
 USER_NAME = 'root'
-PASSW = 'xxPm6rnp'
+PASSW = 'sqlpassword'
 DB_NAME = 'twitter_db'
 
 add_hashtags = ("INSERT INTO hashtags "
@@ -57,10 +57,10 @@ def store_tweets_dict(tweets_dict, search, user):
     cursor.execute(add_username_searches, [username_id, search_id])
     username_search_ind = cursor.lastrowid
     for tweet in tweets_dict:
-        cursor.execute(add_tweet, [tweets_dict[tweet].__hash__(),tweets_dict[tweet].user, tweets_dict[tweet].replies,
-                                   tweets_dict[tweet].likes,tweets_dict[tweet].retweets,tweets_dict[tweet].text,
-                                   tweets_dict[tweet].replies, tweets_dict[tweet].likes,tweets_dict[tweet].retweets])
-        cursor.execute("SELECT id FROM tweets WHERE id= %s", [tweets_dict[tweet].__hash__()])
+        cursor.execute(add_tweet, [tweets_dict[tweet].hash, tweets_dict[tweet].user, tweets_dict[tweet].replies,
+                                   tweets_dict[tweet].likes, tweets_dict[tweet].retweets, tweets_dict[tweet].text,
+                                   tweets_dict[tweet].replies, tweets_dict[tweet].likes, tweets_dict[tweet].retweets])
+        cursor.execute("SELECT id FROM tweets WHERE id= %s", [tweets_dict[tweet].hash])
         tweet_id = cursor.fetchall()[0][0]
         cursor.execute(add_search_tweets, [tweet_id, search_id])
         # cnx.commit()

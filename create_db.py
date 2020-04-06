@@ -4,7 +4,7 @@ from mysql.connector import errorcode
 
 HOST = 'localhost'
 USER_NAME = 'root'
-PASSW = 'xxPm6rnp'
+PASSW = 'sqlpassword'
 DB_NAME = 'twitter_db'
 
 TABLES = {}
