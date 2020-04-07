@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from tweet import Tweet
-from data_mining.store_db import store_tweets_dict
+import os
 
 
 def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5, scrolls: int = 5):
@@ -30,7 +30,7 @@ def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5
         with open('config.json', 'r') as file:
             config = json.load(file)
     except FileNotFoundError as e:
-        print(f"config file is missing, error: {e}")
+        print(f"configuration config_file is missing, error: {e}")
 
     if user != 'anonymous' and password != 'anonymous':
         browser.implicitly_wait(idle)
@@ -131,16 +131,16 @@ def get_args():
 
     args = parser.parse_args()
 
-    return args.query, args.username, args.password
+    return args.query, args.sql_password, args.username, args.password
 
 
 def main():
+    query, sql_password, user, password = get_args()
+    os.environ['sql_password'] = sql_password
     # drop_database()
-    query, user, password = get_args()
     create_db.main()
     soup_tweets = get_tweets(query=query, user=user, password=password)
     tweets_dict = create_tweets_obj(tweets=soup_tweets)
-    test_db()
     store_tweets_dict(tweets_dict, query, user)
 
 

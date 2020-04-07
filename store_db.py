@@ -1,10 +1,18 @@
+"""
+This file is responsible for storing values in the twitter_db
+"""
 from __future__ import print_function
-import mysql.connector
 
-HOST = 'localhost'
-USER_NAME = 'root'
-PASSW = 'sqlpassword'
-DB_NAME = 'twitter_db'
+import os
+
+import mysql.connector
+import json
+
+try:
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+except FileNotFoundError as e:
+    print(f"config file is missing, error: {e}")
 
 add_hashtags = ("INSERT INTO hashtags "
                 "(hashtag)"
@@ -37,16 +45,25 @@ add_tweets_username_searches = ("INSERT INTO tweets_username_searches"
 
 
 def test_db():
-    cnx = mysql.connector.connect(host=HOST, user=USER_NAME, passwd=PASSW, database=DB_NAME)
+    """
+    testing database by printing tweets table
+    """
+    cnx = mysql.connector.connect(host=config["HOST"], user=config["USER_NAME"], passwd=os.environ['sql_password'],
+                                  database=config["DB_NAME"])
     # creating database_cursor to perform SQL operation
     db_cursor = cnx.cursor()
-    db_cursor.execute("show tables")
-    for db in db_cursor:
-        print(db)
+    db_cursor.execute("SELECT * FROM tweets")
+    result = db_cursor.fetchall()
+    for row in result:
+        print(row)
 
 
 def store_tweets_dict(tweets_dict, search, user):
-    cnx = mysql.connector.connect(host=HOST, user=USER_NAME, passwd=PASSW, database=DB_NAME)
+    """
+    storing values in databse
+    """
+    cnx = mysql.connector.connect(host=config["HOST"], user=config["USER_NAME"], passwd=os.environ['sql_password'],
+                                  database=config["DB_NAME"])
     cursor = cnx.cursor(buffered=True)
     cursor.execute(add_username, [user, user])
     cursor.execute("SELECT id FROM usernames WHERE username= %s", [user])
@@ -57,14 +74,13 @@ def store_tweets_dict(tweets_dict, search, user):
     cursor.execute(add_username_searches, [username_id, search_id])
     username_search_ind = cursor.lastrowid
     for tweet in tweets_dict:
+        tweet_txt = tweets_dict[tweet].text[:100] + (tweets_dict[tweet].text[100:] and '..')
         cursor.execute(add_tweet, [tweets_dict[tweet].hash, tweets_dict[tweet].user, tweets_dict[tweet].replies,
-                                   tweets_dict[tweet].likes, tweets_dict[tweet].retweets, tweets_dict[tweet].text,
+                                   tweets_dict[tweet].likes, tweets_dict[tweet].retweets, tweet_txt,
                                    tweets_dict[tweet].replies, tweets_dict[tweet].likes, tweets_dict[tweet].retweets])
         cursor.execute("SELECT id FROM tweets WHERE id= %s", [tweets_dict[tweet].hash])
         tweet_id = cursor.fetchall()[0][0]
         cursor.execute(add_search_tweets, [tweet_id, search_id])
-        # cnx.commit()
-        print("Tweet from {} added successfully.".format(tweet))
         cursor.execute(add_tweets_username_searches, [tweet_id, username_search_ind])
         for hashtag in tweets_dict[tweet].hashtags:
             cursor.execute(add_hashtags, [hashtag, hashtag])
@@ -81,7 +97,10 @@ def store_tweets_dict(tweets_dict, search, user):
 
 
 def drop_database():
-    conn = mysql.connector.connect(host=HOST, user=USER_NAME, passwd=PASSW)
+    """
+    deleting database
+    """
+    conn = mysql.connector.connect(host=config["HOST"], user=config["USER_NAME"], passwd=os.environ['sql_password'])
     cursor = conn.cursor()
-    sql = "DROP DATABASE " + DB_NAME
+    sql = "DROP DATABASE " + config["DB_NAME"]
     cursor.execute(sql)
