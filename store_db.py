@@ -2,13 +2,17 @@
 This file is responsible for storing values in the twitter_db
 """
 from __future__ import print_function
+
+import os
+
 import mysql.connector
 import json
 
-PASSW = 'xxPm6rnp'
-
-with open('config.json', 'r') as file:
-    config = json.load(file)
+try:
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+except FileNotFoundError as e:
+    print(f"config file is missing, error: {e}")
 
 add_hashtags = ("INSERT INTO hashtags "
                 "(hashtag)"
@@ -44,7 +48,7 @@ def test_db():
     """
     testing database by printing tweets table
     """
-    cnx = mysql.connector.connect(host=config["HOST"], user=config["USER_NAME"], passwd=PASSW,
+    cnx = mysql.connector.connect(host=config["HOST"], user=config["USER_NAME"], passwd=os.environ['sql_password'],
                                   database=config["DB_NAME"])
     # creating database_cursor to perform SQL operation
     db_cursor = cnx.cursor()
@@ -58,7 +62,7 @@ def store_tweets_dict(tweets_dict, search, user):
     """
     storing values in databse
     """
-    cnx = mysql.connector.connect(host=config["HOST"], user=config["USER_NAME"], passwd=PASSW,
+    cnx = mysql.connector.connect(host=config["HOST"], user=config["USER_NAME"], passwd=os.environ['sql_password'],
                                   database=config["DB_NAME"])
     cursor = cnx.cursor(buffered=True)
     cursor.execute(add_username, [user, user])
@@ -96,7 +100,7 @@ def drop_database():
     """
     deleting database
     """
-    conn = mysql.connector.connect(host=config["HOST"], user=config["USER_NAME"], passwd=PASSW)
+    conn = mysql.connector.connect(host=config["HOST"], user=config["USER_NAME"], passwd=os.environ['sql_password'])
     cursor = conn.cursor()
     sql = "DROP DATABASE " + config["DB_NAME"]
     cursor.execute(sql)

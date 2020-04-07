@@ -2,15 +2,15 @@
 This file is responsible for creating the twitter_db
 """
 from __future__ import print_function
+
+import os
+
 import mysql.connector
 from mysql.connector import errorcode
 import json
 
-PASSW = 'xxPm6rnp'
 
-TABLES = {}
-
-TABLES['tweets'] = ('''
+TABLES = {'tweets': ('''
 CREATE TABLE tweets(
     id VARCHAR(255) PRIMARY KEY, 
     user_nickname VARCHAR(255) NOT NULL,
@@ -18,61 +18,47 @@ CREATE TABLE tweets(
     num_likes INT,
     num_retweets INT,
     text VARCHAR(255)
-)''')
-
-TABLES['hashtags'] = ("""
+)'''), 'hashtags': ("""
 CREATE TABLE hashtags(
     id INTEGER PRIMARY KEY AUTO_INCREMENT, 
     hashtag VARCHAR(255) UNIQUE NOT NULL
-)""")
-
-TABLES['tweets_hashtags'] = ("""
+)"""), 'tweets_hashtags': ("""
 CREATE TABLE tweets_hashtags(
     id INTEGER PRIMARY KEY AUTO_INCREMENT, 
     hashtag_id INTEGER, 
     tweet_id VARCHAR(255),
     FOREIGN KEY (hashtag_id) REFERENCES hashtags (id),
     FOREIGN KEY (tweet_id) REFERENCES tweets (id)
-)""")
-
-TABLES['usernames'] = ("""
+)"""), 'usernames': ("""
 CREATE TABLE usernames (
   id INTEGER PRIMARY KEY AUTO_INCREMENT,
   username VARCHAR(255) UNIQUE NOT NULL
-)""")
-
-TABLES['searches'] = ("""
+)"""), 'searches': ("""
 CREATE TABLE searches(
   id INTEGER PRIMARY KEY AUTO_INCREMENT,
   search_string VARCHAR(255)
-)""")
-
-TABLES['username_searches'] = ("""
+)"""), 'username_searches': ("""
 CREATE TABLE username_searches(
   id INTEGER PRIMARY KEY AUTO_INCREMENT,
   username_id INTEGER,
   search_id INTEGER,
   FOREIGN KEY (search_id) REFERENCES searches (id),
   FOREIGN KEY (username_id) REFERENCES usernames (id)
-)""")
-
-TABLES['tweets_username_searches'] = ("""
+)"""), 'tweets_username_searches': ("""
 CREATE TABLE tweets_username_searches(
   id INTEGER PRIMARY KEY AUTO_INCREMENT,
   tweet_id VARCHAR(255),
   username_search_id INTEGER,
   FOREIGN KEY (username_search_id) REFERENCES username_searches (id),
   FOREIGN KEY (tweet_id) REFERENCES tweets (id)
-)""")
-
-TABLES['searches_tweets'] = ("""
+)"""), 'searches_tweets': ("""
 CREATE TABLE searches_tweets(
   id INTEGER PRIMARY KEY AUTO_INCREMENT,
   tweet_id VARCHAR(255),
   search_id INTEGER,
   FOREIGN KEY (search_id) REFERENCES searches (id),
   FOREIGN KEY (tweet_id) REFERENCES tweets (id)
-)""")
+)""")}
 
 QUERIES = {'add_tweet_index': '''CREATE UNIQUE INDEX idx_tweets_id ON tweets (id)''',
            'add_username_index ': '''CREATE UNIQUE INDEX idx_username ON usernames (username)''',
@@ -119,10 +105,13 @@ def main():
     """
     Establishes connection to mySQL, creates database
     """
-    with open('config.json', 'r') as file:
-        config = json.load(file)
+    try:
+        with open('config.json', 'r') as file:
+            config = json.load(file)
+    except FileNotFoundError as e:
+        print(f"config file is missing, error: {e}")
 
-    cnx = create_connection(config["HOST"], config["USER_NAME"], PASSW)
+    cnx = create_connection(config["HOST"], config["USER_NAME"], os.environ['sql_password'])
     cursor = cnx.cursor()
     # creating database
     try:
