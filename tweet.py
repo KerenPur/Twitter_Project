@@ -21,14 +21,17 @@ class Tweet:
         self.location = location
 
     def __str__(self):
-        string = """Tweet Info:
-        user: {}
-        replies: {}
-        Retweets: {}
-        hashtags: {}
-        likes: {}
-        text: {}
-        """.format(self.user, self.replies, self.retweets, self.hashtags, self.likes, self.text)
+        string = f"""Tweet Info:
+        user: {self.user}
+        replies: {self.replies}
+        Retweets: {self.retweets}
+        hashtags: {self.hashtags}
+        likes: {self.likes}
+        text: {self.text}
+        statuses: {self.statuses}
+        followers: {self.followers}
+        location: {self.location}
+        """
         return string
 
     @property
