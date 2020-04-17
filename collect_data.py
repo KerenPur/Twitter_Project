@@ -13,6 +13,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from tweet import Tweet
 import os
+from api import get_user_info
 
 
 def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5, scrolls: int = 5):
@@ -91,8 +92,10 @@ def create_tweets_obj(tweets):
         tweet_user = username_regex.match(tweet_user).group(1)
         tweet_text = tweet.findAll("div", {"lang": "en", "dir": "auto"})[0].text
 
+        user_info = get_user_info(tweet_user)
         tweet_obj = Tweet(user=tweet_user, replies=replies, retweets=retweets, hashtags=hashtags, likes=likes,
-                          text=tweet_text)
+                          text=tweet_text, statuses=user_info['statuses'], followers=user_info['followers'],
+                          location=user_info['location'])
         tweets_dict[tweet_user] = tweet_obj
 
     return tweets_dict

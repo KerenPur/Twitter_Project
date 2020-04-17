@@ -3,5 +3,9 @@
   "QUERY_URL": "http://twitter.com/search?q=",
   "HOST" : "localhost",
   "USER_NAME" : "root",
-  "DB_NAME" : "twitter_db"
+  "DB_NAME" : "twitter_db",
+  "CONSUMER_KEY": "1HNgHTDLVvJDIY2E01qlg5YEq",
+  "CONSUMER_SECRET": "Hu5vIrSjrPz33I95HgmQ6jLrXkERKC10a1xtqbstp3S9LUBTU1",
+  "ACCESS_TOKEN": "1232684277114048513-i2hzsn4ap08aFixfCjxe2K6yNSZQad",
+  "ACCESS_TOKEN_SECRET": "kWGudHbg3LLJYPlaGdKp6w5KQAegvLdUGvohJ2j4qSQri"
 }
