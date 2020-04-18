@@ -90,6 +90,12 @@ def create_tweets_obj(tweets):
                       for item in tweet.find_all("a", {"aria-haspopup": 'false', "role": "link"})
                       if "href" in item.attrs][0]
         tweet_user = username_regex.match(tweet_user).group(1)
+        for item in tweet.find_all("div", {"dir": "auto"}):
+            span_item = item.find('span')
+            if span_item:
+                tweet_userid = span_item.text
+            break
+
         tweet_text = tweet.findAll("div", {"lang": "en", "dir": "auto"})[0].text
 
         user_info = get_user_info(tweet_user)

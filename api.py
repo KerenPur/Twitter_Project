@@ -6,7 +6,7 @@ import json
 import tweepy
 
 
-def get_user_info(query, num_of_tweets=10):
+def get_user_info(user_id, num_of_tweets=1):
     """
     This function extract user details from twitter api
     """
@@ -19,14 +19,17 @@ def get_user_info(query, num_of_tweets=10):
     auth = tweepy.OAuthHandler(config['CONSUMER_KEY'], config["CONSUMER_SECRET"])
     auth.set_access_token(config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])
     api = tweepy.API(auth, wait_on_rate_limit=True)
+    user = api.get_user(user_id)
 
-    tweets = tweepy.Cursor(api.search, q=query, lang="en", tweet_mode='extended').items(num_of_tweets)
+
+    # tweets = tweepy.Cursor(api.search, q=query, lang="en", tweet_mode='extended').items(num_of_tweets)
+    # followers_count=tweepy.Cursor(api.followers, id=user_id)
     # Store these tweets into a python list
-    tweet_list = [tweet for tweet in tweets]
+    # tweet_list = [tweet for tweet in tweets]
 
     # Since all the tweets are from the same user, we'll take the first tweet
-    data = {'statuses': tweet_list[0].user.statuses_count, 'followers': tweet_list[0].user.followers_count,
-            'location': tweet_list[0].user.location}
+    data = {'statuses': user.statuses_count, 'followers': user.followers_count,
+            'location': user.location}
 
     return data
 
