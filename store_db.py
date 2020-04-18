@@ -2,9 +2,7 @@
 This file is responsible for storing values in the twitter_db
 """
 from __future__ import print_function
-
 import os
-
 import mysql.connector
 import json
 
@@ -24,7 +22,6 @@ add_tweet = ("INSERT INTO tweets "
              "VALUES (%s,%s, %s, %s, %s,%s, %s, %s, %s,%s)"
              "ON DUPLICATE KEY UPDATE num_replies= %s, num_likes=%s, num_retweets=%s,statuses=%s,followers=%s,"
              "location=%s")
-
 
 
 add_tweet_hashtags = ("INSERT INTO tweets_hashtags"
@@ -65,7 +62,7 @@ def test_db():
 
 def store_tweets_dict(tweets_dict, search, user, log):
     """
-    storing values in databse
+    storing values in database
     """
     cnx = mysql.connector.connect(host=config["HOST"], user=config["USER_NAME"], passwd=os.environ['sql_password'],
                                   database=config["DB_NAME"])
@@ -80,14 +77,14 @@ def store_tweets_dict(tweets_dict, search, user, log):
     username_search_ind = cursor.lastrowid
     for tweet in tweets_dict:
         tweet_txt = tweets_dict[tweet].text[:100] + (tweets_dict[tweet].text[100:] and '..')
-        cursor.execute(add_tweet,[tweets_dict[tweet].hash, tweets_dict[tweet].user, tweets_dict[tweet].replies,
+        cursor.execute(add_tweet, [tweets_dict[tweet].hash, tweets_dict[tweet].user, tweets_dict[tweet].replies,
                                    tweets_dict[tweet].likes, tweets_dict[tweet].retweets, tweet_txt,
-                                   tweets_dict[tweet].user_id,tweets_dict[tweet].statuses,tweets_dict[tweet].followers,
+                                   tweets_dict[tweet].user_id, tweets_dict[tweet].statuses, tweets_dict[tweet].followers,
                                    tweets_dict[tweet].location,
-                                  tweets_dict[tweet].replies,
-                                  tweets_dict[tweet].likes, tweets_dict[tweet].retweets, tweets_dict[tweet].statuses,
-                                  tweets_dict[tweet].followers, tweets_dict[tweet].location,
-                                  ])
+                                   tweets_dict[tweet].replies,
+                                   tweets_dict[tweet].likes, tweets_dict[tweet].retweets, tweets_dict[tweet].statuses,
+                                   tweets_dict[tweet].followers, tweets_dict[tweet].location,
+                                   ])
 
         cursor.execute("SELECT id FROM tweets WHERE id= %s", [tweets_dict[tweet].hash])
         tweet_id = cursor.fetchall()[0][0]

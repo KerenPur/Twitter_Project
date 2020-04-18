@@ -96,14 +96,14 @@ def create_tweets_obj(tweets, log):
                       if "href" in item.attrs][0]
         tweet_user = username_regex.match(tweet_user).group(1)
 
-        user_id= [item.span.text for item in tweet.find_all("div", {"dir": "auto"}) if item.find('span')][0]
+        user_id = [item.span.text for item in tweet.find_all("div", {"dir": "auto"}) if item.find('span')][0]
         tweet_text = tweet.findAll("div", {"lang": "en", "dir": "auto"})[0].text
 
         api = connect_to_api()
         user_info = get_user_info(tweet_user, api=api)
         tweet_obj = Tweet(user=tweet_user, replies=replies, retweets=retweets, hashtags=hashtags, likes=likes,
                           text=tweet_text, statuses=user_info['statuses'], followers=user_info['followers'],
-                          location=user_info['location'],user_id=user_id)
+                          location=user_info['location'], user_id=user_id)
         tweets_dict[tweet_user] = tweet_obj
 
     return tweets_dict

@@ -19,7 +19,7 @@ class Tweet:
         self.statuses = statuses
         self.followers = followers
         self.location = location
-        self.user_id=user_id
+        self.user_id = user_id
 
     def __str__(self):
         string = f"""Tweet Info:
