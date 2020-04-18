@@ -90,18 +90,14 @@ def create_tweets_obj(tweets):
                       for item in tweet.find_all("a", {"aria-haspopup": 'false', "role": "link"})
                       if "href" in item.attrs][0]
         tweet_user = username_regex.match(tweet_user).group(1)
-        for item in tweet.find_all("div", {"dir": "auto"}):
-            span_item = item.find('span')
-            if span_item:
-                tweet_userid = span_item.text
-            break
 
+        user_id= [item.span.text for item in tweet.find_all("div", {"dir": "auto"}) if item.find('span')][0]
         tweet_text = tweet.findAll("div", {"lang": "en", "dir": "auto"})[0].text
 
         user_info = get_user_info(tweet_user)
         tweet_obj = Tweet(user=tweet_user, replies=replies, retweets=retweets, hashtags=hashtags, likes=likes,
                           text=tweet_text, statuses=user_info['statuses'], followers=user_info['followers'],
-                          location=user_info['location'])
+                          location=user_info['location'],user_id=user_id)
         tweets_dict[tweet_user] = tweet_obj
 
     return tweets_dict
@@ -144,6 +140,7 @@ def get_args():
 
 
 def main():
+
     query, sql_password, user, password = get_args()
     os.environ['sql_password'] = sql_password
     # drop_database()

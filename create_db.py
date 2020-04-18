@@ -17,7 +17,11 @@ CREATE TABLE tweets(
     num_replies INT,
     num_likes INT,
     num_retweets INT,
-    text VARCHAR(255)
+    text VARCHAR(255),
+    user VARCHAR(255) NOT NULL,
+    statuses INT,
+    followers INT,
+    location VARCHAR(255)
 )'''), 'hashtags': ("""
 CREATE TABLE hashtags(
     id INTEGER PRIMARY KEY AUTO_INCREMENT, 

@@ -18,10 +18,15 @@ add_hashtags = ("INSERT INTO hashtags "
                 "(hashtag)"
                 "VALUES (%s)"
                 "ON DUPLICATE KEY UPDATE hashtag= %s")
+
 add_tweet = ("INSERT INTO tweets "
-             "(id,user_nickname, num_replies, num_likes, num_retweets,text) "
-             "VALUES (%s,%s, %s, %s, %s,%s)"
-             "ON DUPLICATE KEY UPDATE num_replies= %s, num_likes=%s, num_retweets=%s")
+             "(id,user_nickname, num_replies, num_likes, num_retweets,text,user,statuses,followers,location) "
+             "VALUES (%s,%s, %s, %s, %s,%s, %s, %s, %s,%s)"
+             "ON DUPLICATE KEY UPDATE num_replies= %s, num_likes=%s, num_retweets=%s,statuses=%s,followers=%s,"
+             "location=%s")
+
+
+
 add_tweet_hashtags = ("INSERT INTO tweets_hashtags"
                       "(hashtag_id,tweet_id)"
                       "VALUES (%s, %s)")
@@ -75,9 +80,15 @@ def store_tweets_dict(tweets_dict, search, user):
     username_search_ind = cursor.lastrowid
     for tweet in tweets_dict:
         tweet_txt = tweets_dict[tweet].text[:100] + (tweets_dict[tweet].text[100:] and '..')
-        cursor.execute(add_tweet, [tweets_dict[tweet].hash, tweets_dict[tweet].user, tweets_dict[tweet].replies,
+        cursor.execute(add_tweet,[tweets_dict[tweet].hash, tweets_dict[tweet].user, tweets_dict[tweet].replies,
                                    tweets_dict[tweet].likes, tweets_dict[tweet].retweets, tweet_txt,
-                                   tweets_dict[tweet].replies, tweets_dict[tweet].likes, tweets_dict[tweet].retweets])
+                                   tweets_dict[tweet].user_id,tweets_dict[tweet].statuses,tweets_dict[tweet].followers,
+                                   tweets_dict[tweet].location,
+                                  tweets_dict[tweet].replies,
+                                  tweets_dict[tweet].likes, tweets_dict[tweet].retweets, tweets_dict[tweet].statuses,
+                                  tweets_dict[tweet].followers, tweets_dict[tweet].location,
+                                  ])
+
         cursor.execute("SELECT id FROM tweets WHERE id= %s", [tweets_dict[tweet].hash])
         tweet_id = cursor.fetchall()[0][0]
         cursor.execute(add_search_tweets, [tweet_id, search_id])

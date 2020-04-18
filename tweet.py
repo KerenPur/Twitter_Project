@@ -9,7 +9,7 @@ class Tweet:
     initializing new tweet
     """
 
-    def __init__(self, user, replies, retweets, hashtags, likes, text, statuses, followers, location):
+    def __init__(self, user, replies, retweets, hashtags, likes, text, statuses, followers, location,user_id):
         self.user = user
         self.replies = replies
         self.retweets = retweets
@@ -19,10 +19,12 @@ class Tweet:
         self.statuses = statuses
         self.followers = followers
         self.location = location
+        self.user_id=user_id
 
     def __str__(self):
         string = f"""Tweet Info:
-        user: {self.user}
+        user: {self.user_id}
+        nickname: {self.user}
         replies: {self.replies}
         Retweets: {self.retweets}
         hashtags: {self.hashtags}
