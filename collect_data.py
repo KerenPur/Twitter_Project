@@ -6,6 +6,8 @@ import re
 import time
 import json
 import argparse
+
+import logger
 from store_db import *
 import create_db
 from bs4 import BeautifulSoup
@@ -13,12 +15,13 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from tweet import Tweet
 import os
-from api import get_user_info
+from api import get_user_info, connect_to_api
 
 
-def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5, scrolls: int = 5):
+def get_tweets(log, query: str, user: str = None, password: str = None, idle: int = 5, scrolls: int = 5):
     """
     This function extract tweets from the given url and return the html content as text
+    :param log: log object
     :param idle: idle time for requests
     :param password: password for log in
     :param user: user name for log in
@@ -26,12 +29,13 @@ def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5
     :param scrolls: number of scrolls we wish to simulate
     :return: tweets
     """
+    log.info(f"Collecting tweets for query: {query}, with user: {user}")
     browser = webdriver.Chrome()
     try:
         with open('config.json', 'r') as file:
             config = json.load(file)
     except FileNotFoundError as e:
-        print(f"configuration config_file is missing, error: {e}")
+        log.exception(f"configuration config_file is missing, error: {e}")
 
     if user != 'anonymous' and password != 'anonymous':
         browser.implicitly_wait(idle)
@@ -55,7 +59,7 @@ def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5
     return tweets
 
 
-def create_tweets_obj(tweets):
+def create_tweets_obj(tweets, log):
     """
     This function creates tweets dictionary out of tweets
     :param tweets: soup object of tweets
@@ -68,6 +72,7 @@ def create_tweets_obj(tweets):
     hashtag_regex = re.compile('/hashtag/([^\s]+)\?src=hashtag_click')
     username_regex = re.compile("/([^\s/]+)/?")
     print("Found {} tweets".format(len(tweets)))
+    log.info("Found {} tweets".format(len(tweets)))
     for idx, tweet in enumerate(tweets):
         labels = [item for item in tweet.find_all("div", {"role": "group"}) if "aria-label" in item.attrs]
         replies = 0
@@ -98,7 +103,8 @@ def create_tweets_obj(tweets):
 
         tweet_text = tweet.findAll("div", {"lang": "en", "dir": "auto"})[0].text
 
-        user_info = get_user_info(tweet_user)
+        api = connect_to_api()
+        user_info = get_user_info(tweet_user, api=api)
         tweet_obj = Tweet(user=tweet_user, replies=replies, retweets=retweets, hashtags=hashtags, likes=likes,
                           text=tweet_text, statuses=user_info['statuses'], followers=user_info['followers'],
                           location=user_info['location'])
@@ -147,10 +153,18 @@ def main():
     query, sql_password, user, password = get_args()
     os.environ['sql_password'] = sql_password
     # drop_database()
+
+    log = logger.create_log()
+    log.info('Starting to collect data')
+    print('Starting to collect data')
+
     create_db.main()
-    soup_tweets = get_tweets(query=query, user=user, password=password)
-    tweets_dict = create_tweets_obj(tweets=soup_tweets)
-    store_tweets_dict(tweets_dict, query, user)
+    soup_tweets = get_tweets(log=log, query=query, user=user, password=password)
+    tweets_dict = create_tweets_obj(tweets=soup_tweets, log=log)
+    store_tweets_dict(tweets_dict, query, user, log)
+
+    log.info('Finished running')
+    print('Finished running')
 
 
 if __name__ == "__main__":

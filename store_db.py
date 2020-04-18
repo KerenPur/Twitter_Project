@@ -58,7 +58,7 @@ def test_db():
         print(row)
 
 
-def store_tweets_dict(tweets_dict, search, user):
+def store_tweets_dict(tweets_dict, search, user, log):
     """
     storing values in databse
     """
@@ -88,7 +88,7 @@ def store_tweets_dict(tweets_dict, search, user):
             cursor.execute("SELECT id FROM hashtags WHERE hashtag= %s", [hashtag])
             hashtag_ind = cursor.fetchall()[0][0]
             cursor.execute(add_tweet_hashtags, [hashtag_ind, tweet_id])
-            print("Hashtag {} from {} added successfully.".format(hashtag, tweets_dict[tweet].user))
+            log.info("Hashtag {} from {} added successfully.".format(hashtag, tweets_dict[tweet].user))
 
     # Make sure data is committed to the database
     cnx.commit()

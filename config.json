@@ -1,4 +1,5 @@
 {
+  "LOG_NAME": "twitter",
   "MAIN_URL": "https://twitter.com/login",
   "QUERY_URL": "http://twitter.com/search?q=",
   "HOST" : "localhost",
