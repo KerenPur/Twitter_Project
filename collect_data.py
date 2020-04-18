@@ -22,10 +22,10 @@ def get_tweets(log, query: str, user: str = None, password: str = None, idle: in
     """
     This function extract tweets from the given url and return the html content as text
     :param log: log object
-    :param idle: idle time for requests
-    :param password: password for log in
-    :param user: user name for log in
     :param query: string to search hash tags on twitter
+    :param user: user name for log in
+    :param password: password for log in
+    :param idle: idle time for requests
     :param scrolls: number of scrolls we wish to simulate
     :return: tweets
     """
@@ -63,6 +63,7 @@ def create_tweets_obj(tweets, log):
     """
     This function creates tweets dictionary out of tweets
     :param tweets: soup object of tweets
+    :param log log object
     :return: tweets dictionary
     """
     tweets_dict = {}
@@ -132,7 +133,7 @@ def save_to_csv(file_path, tweets_dict):
 def get_args():
     """
     This function extracts the user input from cli
-    :return: query, user, password
+    :return: query, sql_password, user, password
     """
     parser = argparse.ArgumentParser(description='Query MySql_password User(optional) Password(optional)')
     parser.add_argument('query', type=str, help='Search query on tweeter')

@@ -9,6 +9,8 @@ import tweepy
 def get_user_info(user_id, api):
     """
     This function extract user details from twitter api
+    :param user_id twitter user id, to extract user details
+    :param api twitter api object
     """
 
     user = api.get_user(user_id)
@@ -34,11 +36,3 @@ def connect_to_api():
     api = tweepy.API(auth, wait_on_rate_limit=True)
 
     return api
-
-
-def main():
-    data = get_user_info('Techrose11', 1)
-
-
-if __name__ == "__main__":
-    main()
