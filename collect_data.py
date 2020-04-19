@@ -6,6 +6,8 @@ import re
 import time
 import json
 import argparse
+
+import logger
 from store_db import *
 import create_db
 from bs4 import BeautifulSoup
@@ -13,24 +15,27 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from tweet import Tweet
 import os
+from api import get_user_info, connect_to_api
 
 
-def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5, scrolls: int = 5):
+def get_tweets(log, query: str, user: str = None, password: str = None, idle: int = 5, scrolls: int = 5):
     """
     This function extract tweets from the given url and return the html content as text
-    :param idle: idle time for requests
-    :param password: password for log in
-    :param user: user name for log in
+    :param log: log object
     :param query: string to search hash tags on twitter
+    :param user: user name for log in
+    :param password: password for log in
+    :param idle: idle time for requests
     :param scrolls: number of scrolls we wish to simulate
     :return: tweets
     """
+    log.info(f"Collecting tweets for query: {query}, with user: {user}")
     browser = webdriver.Chrome()
     try:
         with open('config.json', 'r') as file:
             config = json.load(file)
     except FileNotFoundError as e:
-        print(f"configuration config_file is missing, error: {e}")
+        log.exception(f"configuration config_file is missing, error: {e}")
 
     if user != 'anonymous' and password != 'anonymous':
         browser.implicitly_wait(idle)
@@ -54,10 +59,11 @@ def get_tweets(query: str, user: str = None, password: str = None, idle: int = 5
     return tweets
 
 
-def create_tweets_obj(tweets):
+def create_tweets_obj(tweets, log):
     """
     This function creates tweets dictionary out of tweets
     :param tweets: soup object of tweets
+    :param log log object
     :return: tweets dictionary
     """
     tweets_dict = {}
@@ -67,6 +73,7 @@ def create_tweets_obj(tweets):
     hashtag_regex = re.compile('/hashtag/([^\s]+)\?src=hashtag_click')
     username_regex = re.compile("/([^\s/]+)/?")
     print("Found {} tweets".format(len(tweets)))
+    log.info("Found {} tweets".format(len(tweets)))
     for idx, tweet in enumerate(tweets):
         labels = [item for item in tweet.find_all("div", {"role": "group"}) if "aria-label" in item.attrs]
         replies = 0
@@ -89,10 +96,15 @@ def create_tweets_obj(tweets):
                       for item in tweet.find_all("a", {"aria-haspopup": 'false', "role": "link"})
                       if "href" in item.attrs][0]
         tweet_user = username_regex.match(tweet_user).group(1)
+
+        user_id = [item.span.text for item in tweet.find_all("div", {"dir": "auto"}) if item.find('span')][0]
         tweet_text = tweet.findAll("div", {"lang": "en", "dir": "auto"})[0].text
 
+        api = connect_to_api()
+        user_info = get_user_info(tweet_user, api=api)
         tweet_obj = Tweet(user=tweet_user, replies=replies, retweets=retweets, hashtags=hashtags, likes=likes,
-                          text=tweet_text)
+                          text=tweet_text, statuses=user_info['statuses'], followers=user_info['followers'],
+                          location=user_info['location'], user_id=user_id)
         tweets_dict[tweet_user] = tweet_obj
 
     return tweets_dict
@@ -121,7 +133,7 @@ def save_to_csv(file_path, tweets_dict):
 def get_args():
     """
     This function extracts the user input from cli
-    :return: query, user, password
+    :return: query, sql_password, user, password
     """
     parser = argparse.ArgumentParser(description='Query MySql_password User(optional) Password(optional)')
     parser.add_argument('query', type=str, help='Search query on tweeter')
@@ -135,13 +147,22 @@ def get_args():
 
 
 def main():
+
     query, sql_password, user, password = get_args()
     os.environ['sql_password'] = sql_password
     # drop_database()
+
+    log = logger.create_log()
+    log.info('Starting to collect data')
+    print('Starting to collect data')
+
     create_db.main()
-    soup_tweets = get_tweets(query=query, user=user, password=password)
-    tweets_dict = create_tweets_obj(tweets=soup_tweets)
-    store_tweets_dict(tweets_dict, query, user)
+    soup_tweets = get_tweets(log=log, query=query, user=user, password=password)
+    tweets_dict = create_tweets_obj(tweets=soup_tweets, log=log)
+    store_tweets_dict(tweets_dict, query, user, log)
+
+    log.info('Finished running')
+    print('Finished running')
 
 
 if __name__ == "__main__":
