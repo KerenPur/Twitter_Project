@@ -1,4 +1,5 @@
 mysql
+mysql.connector
 selenium
 beautifulsoup4
 requests
