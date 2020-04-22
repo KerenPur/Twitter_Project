@@ -31,9 +31,15 @@ def get_tweets(log, query: str, user: str = None, password: str = None, idle: in
     :return: tweets
     """
     log.info(f"Collecting tweets for query: {query}, with user: {user}")
-    display = Display(visible=0, size=(800, 800))  
-    display.start()
-    browser = webdriver.Chrome()
+    # display = Display(visible=0, size=(800, 800))
+    # display.start()
+    chrome_options = webdriver.ChromeOptions()
+
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--headless")
+    browser = webdriver.Chrome(chrome_options=chrome_options)
+
     try:
         with open('config.json', 'r') as file:
             config = json.load(file)
