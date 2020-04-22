@@ -16,6 +16,7 @@ from selenium.webdriver.common.keys import Keys
 from tweet import Tweet
 import os
 from api import get_user_info, connect_to_api
+from pyvirtualdisplay import Display
 
 
 def get_tweets(log, query: str, user: str = None, password: str = None, idle: int = 5, scrolls: int = 5):
@@ -30,6 +31,8 @@ def get_tweets(log, query: str, user: str = None, password: str = None, idle: in
     :return: tweets
     """
     log.info(f"Collecting tweets for query: {query}, with user: {user}")
+    display = Display(visible=0, size=(800, 800))  
+    display.start()
     browser = webdriver.Chrome()
     try:
         with open('config.json', 'r') as file:
