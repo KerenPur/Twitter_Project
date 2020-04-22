@@ -63,13 +63,16 @@ def get_tweets(log, query: str, user: str = None, password: str = None, idle: in
 
     browser.implicitly_wait(idle)
     body = browser.find_element_by_tag_name('body')
+    log.info("body: ", body.text)
     for _ in range(scrolls):
         body.send_keys(Keys.PAGE_DOWN)
         time.sleep(0.2)
 
     time.sleep(2)
     soup = BeautifulSoup(browser.page_source, 'lxml')
+    log.info("Soup: ", soup.text)
     tweets = soup.find_all("div", attrs={"data-testid": "tweet"})
+    log.info("tweets: ", tweets)
 
     return tweets
 
