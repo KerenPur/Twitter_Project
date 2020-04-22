@@ -61,6 +61,7 @@ def get_tweets(log, query: str, user: str = None, password: str = None, idle: in
         browser.implicitly_wait(1)
     browser.get(config['QUERY_URL'] + query)
 
+    browser.implicitly_wait(idle)
     body = browser.find_element_by_tag_name('body')
     for _ in range(scrolls):
         body.send_keys(Keys.PAGE_DOWN)
