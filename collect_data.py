@@ -43,8 +43,12 @@ def get_tweets(log, query: str, user: str = None, password: str = None, idle: in
 
     opts = Options()
     opts.headless = True
-
-    browser = webdriver.Firefox(options=opts)
+    profile = webdriver.FirefoxProfile()
+    profile.set_preference("general.useragent.override",
+                           "Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0")
+    profile.set_preference("javascript.enabled", True)
+    browser = webdriver.Firefox(profile)
+    
     try:
         with open('config.json', 'r') as file:
             config = json.load(file)
