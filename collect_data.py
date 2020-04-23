@@ -48,7 +48,7 @@ def get_tweets(log, query: str, user: str = None, password: str = None, idle: in
                            "Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0")
     profile.set_preference("javascript.enabled", True)
     browser = webdriver.Firefox(firefox_profile=profile, options=opts)
-    
+
     try:
         with open('config.json', 'r') as file:
             config = json.load(file)
@@ -67,16 +67,16 @@ def get_tweets(log, query: str, user: str = None, password: str = None, idle: in
 
     browser.implicitly_wait(idle)
     body = browser.find_element_by_tag_name('body')
-    log.info("body: ", body.text)
+    log.info(f"body: {body.text}")
     for _ in range(scrolls):
         body.send_keys(Keys.PAGE_DOWN)
         time.sleep(0.2)
 
     time.sleep(2)
     soup = BeautifulSoup(browser.page_source, 'lxml')
-    log.info("Soup: ", soup.text)
+    log.info(f"Soup: {soup.text}")
     tweets = soup.find_all("div", attrs={"data-testid": "tweet"})
-    log.info("tweets: ", tweets)
+    log.info(f"tweets: {tweets}")
 
     return tweets
 
