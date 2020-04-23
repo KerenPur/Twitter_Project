@@ -36,14 +36,16 @@ def get_tweets(log, user_browser, query: str, user: str = None, password: str = 
 
     if user_browser == 'firefox':
         opts = Options()
-        opts.headless = True
+        options = Options()
+        options.add_argument('-headless')
+        # opts.headless = True
         profile = webdriver.FirefoxProfile()
         profile.set_preference("general.useragent.override",
                                "Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0")
         profile.set_preference("javascript.enabled", True)
-        browser = webdriver.Firefox(firefox_profile=profile, options=opts)
+        browser = webdriver.Firefox(firefox_profile=profile, options=options)
 
-    if user_browser == 'chrome':
+    elif user_browser == 'chrome':
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
