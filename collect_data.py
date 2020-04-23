@@ -16,13 +16,15 @@ from selenium.webdriver.common.keys import Keys
 from tweet import Tweet
 import os
 from api import get_user_info, connect_to_api
+from selenium.webdriver.firefox.options import Options
 from pyvirtualdisplay import Display
 
 
-def get_tweets(log, query: str, user: str = None, password: str = None, idle: int = 5, scrolls: int = 5):
+def get_tweets(log, user_browser, query: str, user: str = None, password: str = None, idle: int = 5, scrolls: int = 5):
     """
     This function extract tweets from the given url and return the html content as text
     :param log: log object
+    :param user_browser: user browser type
     :param query: string to search hash tags on twitter
     :param user: user name for log in
     :param password: password for log in
@@ -31,23 +33,24 @@ def get_tweets(log, query: str, user: str = None, password: str = None, idle: in
     :return: tweets
     """
     log.info(f"Collecting tweets for query: {query}, with user: {user}")
-    # display = Display(visible=0, size=(800, 800))
-    # display.start()
-    # chrome_options = webdriver.ChromeOptions()
-    #
-    # chrome_options.add_argument("--no-sandbox")
-    # chrome_options.add_argument("--disable-dev-shm-usage")
-    # chrome_options.add_argument("--headless")
-    # browser = webdriver.Chrome(chrome_options=chrome_options)
-    from selenium.webdriver.firefox.options import Options
 
-    opts = Options()
-    opts.headless = True
-    profile = webdriver.FirefoxProfile()
-    profile.set_preference("general.useragent.override",
-                           "Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0")
-    profile.set_preference("javascript.enabled", True)
-    browser = webdriver.Firefox(firefox_profile=profile, options=opts)
+    if user_browser == 'firefox':
+        opts = Options()
+        opts.headless = True
+        profile = webdriver.FirefoxProfile()
+        profile.set_preference("general.useragent.override",
+                               "Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0")
+        profile.set_preference("javascript.enabled", True)
+        browser = webdriver.Firefox(firefox_profile=profile, options=opts)
+
+    if user_browser == 'chrome':
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--headless")
+        browser = webdriver.Chrome(chrome_options=chrome_options)
+    else:
+        log.warning(f"Selected browser {user_browser} is not valid")
 
     try:
         with open('config.json', 'r') as file:
@@ -162,15 +165,16 @@ def get_args():
     parser.add_argument('sql_password', type=str, help='MySql Server password')
     parser.add_argument('-u', '--username', default='anonymous', help='Tweeter Username')
     parser.add_argument('-p', '--password', default='anonymous', help='Tweeter Password')
+    parser.add_argument('-b', '--browser', default='firefox', help='Browser: firefox or chrome')
 
     args = parser.parse_args()
 
-    return args.query, args.sql_password, args.username, args.password
+    return args.query, args.sql_password, args.username, args.password, args.browser
 
 
 def main():
 
-    query, sql_password, user, password = get_args()
+    query, sql_password, user, password, selected_browser = get_args()
     os.environ['sql_password'] = sql_password
     # drop_database()
 
@@ -179,7 +183,7 @@ def main():
     print('Starting to collect data')
 
     create_db.main()
-    soup_tweets = get_tweets(log=log, query=query, user=user, password=password)
+    soup_tweets = get_tweets(log=log, query=query, user=user, password=password, user_browser=selected_browser)
     tweets_dict = create_tweets_obj(tweets=soup_tweets, log=log)
     store_tweets_dict(tweets_dict, query, user, log)
 
