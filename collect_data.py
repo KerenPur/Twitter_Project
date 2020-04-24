@@ -35,22 +35,22 @@ def get_tweets(log, user_browser, query: str, user: str = None, password: str = 
     log.info(f"Collecting tweets for query: {query}, with user: {user}")
 
     if user_browser == 'firefox':
-        opts = Options()
-        options = Options()
-        options.add_argument('-headless')
+       
         # opts.headless = True
         profile = webdriver.FirefoxProfile()
         profile.set_preference("general.useragent.override",
                                "Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0")
         profile.set_preference("javascript.enabled", True)
-        browser = webdriver.Firefox(firefox_profile=profile, options=options)
-
-    elif user_browser == 'chrome':
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--headless")
-        browser = webdriver.Chrome(chrome_options=chrome_options)
+        options = Options()
+        options.headless = True
+        driver = webdriver.Firefox(firefox_profile=profile,options=options, executable_path=r'./geckodriver')
+        
+    #elif user_browser == 'chrome':
+     #   chrome_options = webdriver.ChromeOptions()
+      #  chrome_options.add_argument("--no-sandbox")
+       # chrome_options.add_argument("--disable-dev-shm-usage")
+        #chrome_options.add_argument("--headless")
+        #browser = webdriver.Chrome(chrome_options=chrome_options)
     else:
         log.warning(f"Selected browser {user_browser} is not valid")
 
