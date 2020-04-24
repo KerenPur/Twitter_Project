@@ -43,7 +43,7 @@ def get_tweets(log, user_browser, query: str, user: str = None, password: str = 
         profile.set_preference("javascript.enabled", True)
         options = Options()
         options.headless = True
-        driver = webdriver.Firefox(firefox_profile=profile,options=options, executable_path=r'./geckodriver')
+        browser = webdriver.Firefox(firefox_profile=profile,options=options)
         
     #elif user_browser == 'chrome':
      #   chrome_options = webdriver.ChromeOptions()
