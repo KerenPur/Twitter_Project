@@ -10,6 +10,4 @@ This project is using chrome driver when using selenium package, and should be i
 
 All the data is stored in MySql Server db.
 
-# Authors
-Keren Halperin
-Tsofit Zohar
+
